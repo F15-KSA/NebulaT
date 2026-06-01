@@ -1,0 +1,31 @@
+```yaml
+name: Compile NebulaT
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-13
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Theos Environment
+      run: |
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+        echo "THEOS=~/theos" >> $GITHUB_ENV
+        
+    - name: Compile Dylib
+      run: |
+        export THEOS=~/theos
+        make SDKVERSION=16.4 ARCHS="arm64 arm64e" TARGET=iphone:clang:latest:15.0
+        
+    - name: Upload Finished Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: NebulaT-Dylib
+        path: .theos/obj/*.dylib
